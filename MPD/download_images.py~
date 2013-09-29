@@ -1,0 +1,122 @@
+import requests
+from fanart.music import Artist
+from fanart.music import Album
+import fanart
+from fanart.core import Request
+import musicbrainz2.webservice as ws
+
+
+#find artistID in MusicBrainz
+def getArtistId(self):
+	if self.artistId == None:
+		q = ws.Query()
+
+		#See if the there is more than an artist
+		#If true it will use the first one
+		if "," in self.currentartist:
+			artistOne=self.currentartist.split(",")[0]
+		else:
+			artistOne=self.currentartist
+		filter = ws.ArtistFilter(artistOne)
+		artist=q.getArtists(filter)
+
+		#Choose the artist with highest score
+		artists=q.getArtists(filter)
+		maxscore = 0
+		doubt = False
+		for artist in artists:
+			if maxscore < artist.getScore():
+				match_artist = artist.getArtist()
+				maxscore = artist.getScore()
+			else:
+				if maxscore == artist.getScore():
+					doubt = True
+		if doubt:
+			match_artist = self.findRealArtist(maxscore,artists).getArtist()			
+		artistId = match_artist.getId()
+		artistId = artistId.split("/")
+		self.artistId=artistId[len(artistId)-1]
+
+def findRealArtist(self,score,artists):
+	#this takes artists who has that score
+	#it will try to find the artist who has the current song
+	found = False
+	artist_found = None
+	num = 0
+	while not found and num<len(artists):
+		artist = artists[num]
+
+		if score == artist.getScore():
+			if self.isRealArtist(artist.getArtist().getId()):
+				found = True
+				artist_found=artist
+		num = num +1
+	if found:
+		return artist_found
+	else:
+		return artist
+
+def isRealArtist(self, idArtist):
+	#looks if the artist has the curren track in MusicBrainz
+	q = ws.Query()
+	filter = ws.TrackFilter(self.currenttrackname,artistId=idArtist)
+	tracks=q.getTracks(filter)
+	if len(tracks) > 0:
+		return True
+	else:
+		return False
+
+#get the albumId (ReleaseGroup ID) in MusicBrainz
+def getAlbumId(self):
+	if self.albumId == None:
+		q = ws.Query()
+
+		#Filter the releases of MusicBrainz with the artistID
+		filter = ws.ReleaseGroupFilter(self.currentalbum,artistId=self.artistId)
+		releases=q.getReleaseGroups(filter)
+		match_release = None
+
+		#Choose the album with best match
+		maxscore = 0
+		for release in releases:
+			if maxscore < release.getScore():
+				maxscore = release.getScore()
+				match_release = release.getReleaseGroup()
+
+		#if the album was found get the id from MusiBrainz url
+		if match_release != None:
+			albumId = match_release.getId()
+			albumId = albumId.split("/")
+			self.albumId=albumId[len(albumId)-1]
+
+def downloadDiscImage(self):
+	#Download cover from fanart.tv
+	getArtistId(self)
+	getAlbumId(self)
+	target_album = None
+	#Find album in the artist discs
+	artist = Artist.get(id=self.artistId)
+	for album in artist.albums:
+		if album.mbid == self.albumId:
+			target_album = album
+	if target_album != None and len(target_album.covers)>0:
+		disc_image = target_album.covers[0]
+		with open(self.disc_filepath, 'wb') as fp:
+				fp.write(disc_image.content())
+	self.loadDiscImage()
+
+    
+
+def downloadBackground(self):
+	#Download background from fanart.tv
+	try:
+		self.getArtistId()
+		#Start with fanart.tv
+		artist = Artist.get(id=self.artistId)
+		background = artist.backgrounds[0]
+		with open(self.back_filepath, 'wb') as fp:
+			fp.write(background.content())
+		self.currentart = pygame.transform.scale(pygame.image.load(self.back_filepath),(self.surface.get_width(),self.surface.get_height()))
+		self.loadBackground()
+    	except:
+		print "Error Downloading background"
