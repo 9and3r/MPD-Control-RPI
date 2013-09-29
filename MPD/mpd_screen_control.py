@@ -39,7 +39,7 @@ class MPD_Control:
 	def mouseClick(self, mouseDownPos, mouseUpPos, longPress):
 		swipe = self.swipe(mouseDownPos, mouseUpPos)
 		if swipe == -1:
-			self.screens[self.currentScreen].mouseClick(mouseDownPos, mouseUpPos)
+			self.screens[self.currentScreen].mouseClick(mouseDownPos, mouseUpPos,longPress)
 		elif swipe==1:
 			if self.currentScreen ==0:
 				self.currentScreen = self.currentScreen + 1

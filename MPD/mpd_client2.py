@@ -310,7 +310,7 @@ class MPD:
 	else:
 		self.client.random("0")		
 
-    def mouseClick(self, mouseDownPos, mouseUpPos):
+    def mouseClick(self, mouseDownPos, mouseUpPos,longPress):
 	for key in self.touchList:
 		if key == 'PROGRESSBAR':
 			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):

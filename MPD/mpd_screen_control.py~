@@ -37,7 +37,6 @@ class MPD_Control:
 
 		
 	def mouseClick(self, mouseDownPos, mouseUpPos, longPress):
-		print longPress
 		swipe = self.swipe(mouseDownPos, mouseUpPos)
 		if swipe == -1:
 			self.screens[self.currentScreen].mouseClick(mouseDownPos, mouseUpPos)
