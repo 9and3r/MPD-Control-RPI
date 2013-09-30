@@ -41,8 +41,10 @@ class MPD:
 	self.lastVolume = 50
 
 	#Load MDP server config file
+	fpath = os.path.expanduser("~")+'/.config/fanart_api'
+	f = open(fpath)
+	self.fanarttvkey = f.readline()
 	
-	self.fanarttvkey = '1df8573d7b7ba335019693c84a224588'
 	os.environ.setdefault('FANART_APIKEY', self.fanarttvkey)
 
 	self.backgroundshow = '1'

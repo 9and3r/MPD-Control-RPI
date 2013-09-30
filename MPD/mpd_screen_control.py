@@ -1,4 +1,5 @@
 import mpd
+import os
 import thread
 import logging
 import time
@@ -20,9 +21,11 @@ class MPD_Control:
 		self.connected = False
 		thread.start_new_thread(self.connectMDPserver,())
 		self.screens = []
+		#Hau aldatu behar da. Lehenengo pantaila emendatzekoa
+		self.screens.append(MPD(self.surface,self.client))
 		self.screens.append(MPD(self.surface,self.client))
 		self.screens.append(Playlist_View(self.surface,self.client))
-		self.currentScreen = 0
+		self.currentScreen = 1
 
 	def connectMDPserver(self):
 		# Connect to MDP server
@@ -41,15 +44,18 @@ class MPD_Control:
 		if swipe == -1:
 			self.screens[self.currentScreen].mouseClick(mouseDownPos, mouseUpPos,longPress)
 		elif swipe==1:
-			if self.currentScreen ==0:
+			if self.currentScreen ==1:
 				self.currentScreen = self.currentScreen + 1
+		elif swipe == 2:
+			if self.currentScreen ==1:
+				os.system("sudo shutdown now")
 		elif swipe ==3:
-			if self.currentScreen ==0:
+			if self.currentScreen ==1:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
 				self.currentScreen = self.currentScreen + 1
 		elif swipe ==4:
-			if self.currentScreen == 0:
+			if self.currentScreen == 1 and self.currentScreen == 0:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
 				self.currentScreen = self.currentScreen -1
