@@ -9,9 +9,10 @@ import json
 import thread
 import random
 import math
+import time
 import pygame
 from dynamic_background import DynamicBackground
-
+from ConfigParser import SafeConfigParser
 
 class MPD:
 
@@ -39,12 +40,13 @@ class MPD:
 
 	self.touchList = {'PROGRESSBAR': None, 'PLAYBUTTON' : None, 'VOLUMEBAR': None, 'RANDOM' : None, 'REPEAT' : None, 'VOLUMEBUTTON' : None}
 	self.lastVolume = 50
+	self.lastTimeMusicBrainz = -1
 
 	#Load MDP server config file
 	fpath = os.path.expanduser("~")+'/.config/fanart_api'
-	f = open(fpath)
-	self.fanarttvkey = f.readline()
-	
+	parser = SafeConfigParser()
+	parser.read(fpath)
+	self.fanarttvkey = parser.get('DEFAULT','fanart_api_key')
 	os.environ.setdefault('FANART_APIKEY', self.fanarttvkey)
 
 	self.backgroundshow = '1'
@@ -95,6 +97,8 @@ class MPD:
 		self.loadBackground()
 	if self.covershow == '1':
 		self.loadDiscImage()
+
+	
     
      
     def loadBackground(self):
@@ -111,7 +115,10 @@ class MPD:
     
     #find artistID in MusicBrainz
     def getArtistId(self):
+	if self.lastTimeMusicBrainz != -1 and self.lastTimeMusicBrainz + 3 < time.time():
+		time.sleep(1)
 	if self.artistId == None:
+		self.lastTimeMusicBrainz = time.time()
 		q = ws.Query()
 
 		#See if the there is more than an artist
@@ -172,7 +179,12 @@ class MPD:
 
     #get the albumId (ReleaseGroup ID) in MusicBrainz
     def getAlbumId(self):
+	print self.lastTimeMusicBrainz
+	print self.lastTimeMusicBrainz + 3
+	if self.lastTimeMusicBrainz != -1 and self.lastTimeMusicBrainz + 3 < time.time():
+		time.sleep(1)
 	if self.albumId == None:
+		self.lastTimeMusicBrainz = time.time()
 		q = ws.Query()
 
 		#Filter the releases of MusicBrainz with the artistID
@@ -247,6 +259,7 @@ class MPD:
 		#See if the track has changed
 		if  'songid' in self.client_info:
 			if self.currenttrack != self.client_info['songid']:
+				print "sartu naiz"
 				self.getCurrentTrackInfo()
 			self.elapse = float(self.client_info['elapsed'])
 	else:
@@ -314,24 +327,26 @@ class MPD:
 
     def mouseClick(self, mouseDownPos, mouseUpPos,longPress):
 	for key in self.touchList:
-		if key == 'PROGRESSBAR':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.seekTrack(self.touchList[key], mouseDownPos)
-		elif key == 'VOLUMEBAR':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.setVolume(self.touchList[key], mouseDownPos)
-		elif key == 'PLAYBUTTON':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.play()
-		elif key == 'REPEAT':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.changeRepeat()
-		elif key == 'RANDOM':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.changeRandom()
-		elif key == 'VOLUMEBUTTON':
-			if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
-				self.mute()
+		if self.touchList[key] != None:
+			if key == 'PROGRESSBAR':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.seekTrack(self.touchList[key], mouseDownPos)
+			elif key == 'VOLUMEBAR':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.setVolume(self.touchList[key], mouseDownPos)
+			elif key == 'PLAYBUTTON':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.play()
+			elif key == 'REPEAT':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.changeRepeat()
+			elif key == 'RANDOM':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.changeRandom()
+			elif key == 'VOLUMEBUTTON':
+				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
+					self.mute()
+		
 
     def swipe(self, swipe):
 	self.changeTrack(swipe)

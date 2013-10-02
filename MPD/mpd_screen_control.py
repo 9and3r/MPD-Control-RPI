@@ -5,13 +5,21 @@ import logging
 import time
 import math
 import pygame
-from playlist_view import Playlist_View
 from mpd_client2 import MPD
 from dynamic_background import DynamicBackground
+from shutdown_menu import ShutdownMenu
+from song_view import Song_View
+from playlist_view import Playlist_View
 
 class MPD_Control:
 
-	def __init__(self, surface):
+	instance = None       
+    	def __new__(cls, *args, **kargs): 
+        	if cls.instance is None:
+            		cls.instance = object.__new__(cls, *args, **kargs)
+        	return cls.instance
+
+	def prepare(self, surface):
 		self.surface = surface
 		# Connect to MDP server
 		self.ip = 'localhost'
@@ -22,9 +30,10 @@ class MPD_Control:
 		thread.start_new_thread(self.connectMDPserver,())
 		self.screens = []
 		#Hau aldatu behar da. Lehenengo pantaila emendatzekoa
+		self.screens.append(ShutdownMenu(self.surface))
 		self.screens.append(MPD(self.surface,self.client))
-		self.screens.append(MPD(self.surface,self.client))
-		self.screens.append(Playlist_View(self.surface,self.client))
+		self.screens.append(Playlist_View(self.surface,self.client,self))
+		self.screens.append(Song_View(self.surface,self.client))
 		self.currentScreen = 1
 
 	def connectMDPserver(self):
@@ -32,33 +41,57 @@ class MPD_Control:
 		try:
 			self.client.connect(self.ip, self.port)
 			self.connected = True
+			
 		except:
 			print "Could not connect to MDP server. Check configuration"
 			self.connected = False
 			time.sleep(10)
 			self.connectMDPserver()
 
-		
+	def changeScreenVariable(self, num, relative,variable):
+		if relative:
+			self.currentScreen = self.currentScreen + num
+		else:
+			self.currentScreen = num
+		if self.currentScreen < 0 or self.currentScreen > len(self.screens)- 1:
+			print 'The screen number is not correct'
+			self.currentScreen = 1	
+		self.screens[self.currentScreen].setVariable(variable)	
+
+	def changeScreen(self, num, relative):
+		if relative:
+			self.currentScreen = self.currentScreen + num
+		else:
+			self.currentScreen = num
+		if self.currentScreen < 0 or self.currentScreen > len(self.screens)- 1:
+			print 'The screen number is not correct'
+			self.currentScreen = 1		
+
 	def mouseClick(self, mouseDownPos, mouseUpPos, longPress):
 		swipe = self.swipe(mouseDownPos, mouseUpPos)
 		if swipe == -1:
 			self.screens[self.currentScreen].mouseClick(mouseDownPos, mouseUpPos,longPress)
 		elif swipe==1:
 			if self.currentScreen ==1:
-				self.currentScreen = self.currentScreen + 1
+				self.changeScreen(1,True)
+			else:
+				self.screens[self.currentScreen].swipe(swipe)
 		elif swipe == 2:
 			if self.currentScreen ==1:
-				os.system("sudo shutdown now")
+				self.changeScreen(-1,True)
+				#os.system("sudo shutdown now")
+			else:
+				self.screens[self.currentScreen].swipe(swipe)
 		elif swipe ==3:
 			if self.currentScreen ==1:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
-				self.currentScreen = self.currentScreen + 1
+				self.changeScreen(1,True)
 		elif swipe ==4:
 			if self.currentScreen == 1 and self.currentScreen == 0:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
-				self.currentScreen = self.currentScreen -1
+				self.changeScreen(-1,True)
 
 	def swipe(self, mouseDownPos, mouseUpPos):
 		if(math.fabs(mouseDownPos[0]-mouseUpPos[0])<50):
@@ -102,3 +135,5 @@ class MPD_Control:
 
 	def exit(self):
 		self.client.disconnect() 
+
+

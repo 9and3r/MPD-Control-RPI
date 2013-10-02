@@ -44,7 +44,8 @@ screen = pygame.display.set_mode((320, 240), 0, 32)
 pygame.display.set_caption('MPD')
 
 #Set up the mpd
-mpd = MPD_Control(screen)
+mpd = MPD_Control()
+mpd.prepare(screen)
 
 running = True
 # run the game loop
