@@ -62,7 +62,7 @@ class Song_View:
 		i = self.currentSong
 		showNum = 0
 		while not exitLoop and i < self.getMax():
-			current = Text_Control().changeText(('SONG'+str(showNum)), self.songs[i]['title'], 0, y,-1,self.surface,self.myfont)
+			current = Text_Control().changeText(('SONG'+str(showNum)), self.songs[i]['title']+'-'+self.songs[i]['artist'], 0, y,-1,self.surface,self.myfont)
 			if (current.get_rect().height+y < self.surface.get_height()):
 				songList.append(current)
 				self.touchList[('SONG'+str(showNum))] = pygame.Rect(0,y,songList[showNum].get_rect().width,songList[showNum].get_rect().height)
@@ -73,7 +73,7 @@ class Song_View:
 				self.maxInView = i - self.currentSong
 				exitLoop = True
 		
-	
+
 	def showScreen(self):
 		DynamicBackground().fillDynamicBackgroundColor(self.surface)
 		self.myfont = pygame.font.SysFont(None, 30)

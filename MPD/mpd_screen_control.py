@@ -5,7 +5,7 @@ import logging
 import time
 import math
 import pygame
-from mpd_client2 import MPD
+from mpd_client import MPD
 from dynamic_background import DynamicBackground
 from shutdown_menu import ShutdownMenu
 from song_view import Song_View
@@ -30,7 +30,7 @@ class MPD_Control:
 		thread.start_new_thread(self.connectMDPserver,())
 		self.screens = []
 		#Hau aldatu behar da. Lehenengo pantaila emendatzekoa
-		self.screens.append(ShutdownMenu(self.surface))
+		self.screens.append(ShutdownMenu(self.surface,self))
 		self.screens.append(MPD(self.surface,self.client))
 		self.screens.append(Playlist_View(self.surface,self.client,self))
 		self.screens.append(Song_View(self.surface,self.client))
@@ -79,16 +79,16 @@ class MPD_Control:
 		elif swipe == 2:
 			if self.currentScreen ==1:
 				self.changeScreen(-1,True)
-				#os.system("sudo shutdown now")
+
 			else:
 				self.screens[self.currentScreen].swipe(swipe)
 		elif swipe ==3:
-			if self.currentScreen ==1:
+			if self.currentScreen ==1 or self.currentScreen == 2:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
 				self.changeScreen(1,True)
 		elif swipe ==4:
-			if self.currentScreen == 1 and self.currentScreen == 0:
+			if self.currentScreen == 1:
 				self.screens[self.currentScreen].swipe(swipe)
 			else:
 				self.changeScreen(-1,True)

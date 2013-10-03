@@ -39,6 +39,10 @@ class Playlist_View:
 		else:
 			return len(self.playlists)	
 	
+
+	def swipe(self,swipe):
+		pass	
+
 	def showScreen(self):
 		self.showPlaylist = []
 		DynamicBackground().fillDynamicBackgroundColor(self.surface)

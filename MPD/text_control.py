@@ -18,7 +18,6 @@ class Text_Control(object):
 	return self.strings[key].getReadyText()
 
    def printKey(self,key):
-	print self.strings
 	self.strings[key].printInSurfaceText()
 
 
