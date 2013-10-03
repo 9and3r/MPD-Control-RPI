@@ -1,6 +1,7 @@
 import pygame
 from dynamic_background import DynamicBackground
 import os
+import sys
 
 class ShutdownMenu:
 
@@ -40,11 +41,16 @@ class ShutdownMenu:
     def swipe(self, swipe):
 	pass
 	
+    def restart(self):
+	python = sys.executable
+        os.execl(python, python, * sys.argv)
+	
     def mouseClick(self, mouseDownPos, mouseUpPos, longPress):
 		for key in self.touchList:
 			if key == 'UPDATE':
 				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
 					os.system('./update.sh')
+					self.restart()
 			elif key == 'EXIT':
 				if self.touchList[key].collidepoint(mouseDownPos) and self.touchList[key].collidepoint(mouseUpPos):
 					exit()

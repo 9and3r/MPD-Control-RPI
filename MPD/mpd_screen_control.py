@@ -117,7 +117,7 @@ class MPD_Control:
 
 
 	def showScreen(self):
-		if self.connected:
+		if self.connected or self.currentScreen == 0:
 			return self.screens[self.currentScreen].showScreen()
 		else:
 			return self.showNotConnected()
